@@ -1,5 +1,25 @@
 # Shellcode null-free
 
-Repita o desafio de spawn shell, mas agora `payload.bin` nao pode conter o byte `0x00`.
+## O que voce precisa fazer
 
-O objetivo e aplicar a troca discutida no roteiro: montar os registradores sem instrucoes que criem zero-padding literal. O checker primeiro rejeita bytes nulos e depois confirma que o shell executa `printf NULL_FREE_OK`.
+Crie `/home/hacker/solve.py` com um shellcode que execute `/bin/sh`, como no modulo anterior. A diferenca e que o arquivo final `/home/hacker/payload.bin` nao pode conter nenhum byte `0x00`.
+
+```python
+from pwn import asm, context
+
+context.arch = "amd64"
+payload = asm("""
+	# execve("/bin/sh", argv, NULL), sem bytes nulos no resultado
+""")
+assert b"\x00" not in payload
+open("/home/hacker/payload.bin", "wb").write(payload)
+```
+
+Execute:
+
+```bash
+python3 /home/hacker/solve.py
+/challenge/check
+```
+
+O checker primeiro inspeciona os bytes do arquivo. Se nao houver `0x00`, ele executa o harness C e envia `printf NULL_FREE_OK; exit` ao shell.

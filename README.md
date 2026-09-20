@@ -2,7 +2,7 @@
 
 Dojo privado para praticar os conceitos de `Aula9_Shellcode_Roteiro.md` no pwn.college.
 
-Os desafios executam somente bytes fornecidos pelo aluno dentro do container do desafio. O harness de execucao e escrito em C, seguindo o roteiro: `mmap` reserva memoria executavel, `memcpy` copia os bytes e um ponteiro de funcao transfere o controle para o shellcode. Os exercicios de comunicacao usam entrada e saida locais e controladas; nao criam listeners, nao fazem conexoes externas e nao alteram usuarios, defesas ou outros processos.
+Os desafios executam somente bytes fornecidos pelo aluno dentro do container do desafio. O harness de execucao e escrito em C, seguindo o roteiro: ele abre `payload.bin`, reserva memoria executavel com `mmap`, carrega os bytes e um ponteiro de funcao transfere o controle para o shellcode. Os exercicios de comunicacao usam entrada e saida locais e controladas; nao criam listeners, nao fazem conexoes externas e nao alteram usuarios, defesas ou outros processos.
 
 ## Estrutura
 
@@ -19,11 +19,12 @@ Os desafios executam somente bytes fornecidos pelo aluno dentro do container do 
 ## Fluxo do aluno
 
 1. Entre no desafio no pwn.college.
-2. Copie `solve.py` para `/home/hacker/solve.py` e escreva o Assembly pedido usando `pwn.asm`.
-3. Execute `python3 solve.py`; ele gera `/home/hacker/payload.bin`.
-4. Rode `/challenge/check`.
+2. Crie `/home/hacker/solve.py`.
+3. Dentro dele, escreva o Assembly pedido como texto dentro de `asm("""...")`.
+4. Execute `python3 /home/hacker/solve.py`; o `pwntools` monta o Assembly e grava os bytes crus em `/home/hacker/payload.bin`.
+5. Rode `/challenge/check`; o checker compila o harness C, executa o `.bin` e verifica o resultado.
 
-O arquivo `payload.bin` deve conter bytes crus, sem cabecalho ELF. No modulo staged, o `solve.py` tambem cria `stage2.bin`. Python aparece somente no lado do aluno, por causa do `pwntools`; o carregador e o harness sao C.
+O arquivo `payload.bin` deve conter bytes crus, sem cabecalho ELF. Voce nao precisa criar um arquivo `.asm` separado: o Assembly fica dentro do `solve.py`. No modulo staged, o `solve.py` tambem cria `stage2.bin`. Python aparece somente no lado do aluno, por causa do `pwntools`; o carregador e o harness sao C.
 
 ## Publicacao
 
