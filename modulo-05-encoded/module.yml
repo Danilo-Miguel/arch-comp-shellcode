@@ -1,0 +1,4 @@
+name: "Shellcode 5 - Codificado"
+challenges:
+  - id: encoded
+    name: "Decoder XOR em runtime"

@@ -1,0 +1,19 @@
+#!/usr/bin/exec-suid -- /bin/bash -p
+set -u
+
+PAYLOAD=/home/hacker/payload.bin
+if [ ! -s "$PAYLOAD" ]; then
+    echo "Crie /home/hacker/payload.bin primeiro."
+    exit 1
+fi
+
+gcc -O2 -Wall /challenge/run_payload.c -o /tmp/run_payload
+/tmp/run_payload "$PAYLOAD"
+status=$?
+if [ "$status" -eq 42 ]; then
+    echo "Correto! Flag:"
+    cat /flag
+else
+    echo "O shellcode terminou com codigo $status; esperado: 42."
+    exit 1
+fi

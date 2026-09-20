@@ -1,0 +1,4 @@
+name: "Shellcode 1 - Prova de conceito"
+challenges:
+  - id: exit42
+    name: "Shellcode minimo - exit(42)"

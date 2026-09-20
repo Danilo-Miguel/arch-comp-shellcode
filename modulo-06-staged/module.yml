@@ -1,0 +1,4 @@
+name: "Shellcode 6 - Staged"
+challenges:
+  - id: staged
+    name: "Stage 1 le e executa o stage 2"

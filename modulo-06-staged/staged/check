@@ -1,0 +1,23 @@
+#!/usr/bin/exec-suid -- /bin/bash -p
+set -u
+
+STAGE1=/home/hacker/payload.bin
+STAGE2=/home/hacker/stage2.bin
+if [ ! -s "$STAGE1" ] || [ ! -s "$STAGE2" ]; then
+    echo "Crie payload.bin e stage2.bin primeiro."
+    exit 1
+fi
+if [ "$(wc -c < "$STAGE1")" -gt 64 ] || [ "$(wc -c < "$STAGE2")" -gt 512 ]; then
+    echo "Limites: stage 1 ate 64 bytes; stage 2 ate 512 bytes."
+    exit 1
+fi
+
+gcc -O2 -Wall /challenge/run_staged.c -o /tmp/run_staged
+output=$(timeout 3 /tmp/run_staged "$STAGE1" "$STAGE2" 2>&1) || true
+if [ "$output" = "STAGED_OK" ]; then
+    echo "Correto! Flag:"
+    cat /flag
+else
+    echo "O stage 2 nao foi executado corretamente."
+    exit 1
+fi

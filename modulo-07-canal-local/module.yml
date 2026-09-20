@@ -1,0 +1,4 @@
+name: "Shellcode 7 - Canal local"
+challenges:
+  - id: canal-local
+    name: "Canal interativo controlado"

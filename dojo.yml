@@ -1,0 +1,14 @@
+id: shellcode-pwntools
+name: "Shellcode com pwntools - Computer Architecture"
+type: example
+award:
+  emoji: "\U0001f9e0"
+image: pwncollege/challenge-simple
+modules:
+  - id: modulo-01-exit42
+  - id: modulo-02-spawn-shell
+  - id: modulo-03-null-free
+  - id: modulo-04-comando-unico
+  - id: modulo-05-encoded
+  - id: modulo-06-staged
+  - id: modulo-07-canal-local

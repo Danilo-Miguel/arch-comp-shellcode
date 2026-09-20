@@ -1,0 +1,4 @@
+name: "Shellcode 4 - Comando unico"
+challenges:
+  - id: comando-unico
+    name: "Payload de efeito unico - write"

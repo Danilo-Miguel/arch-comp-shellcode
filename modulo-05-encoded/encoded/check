@@ -1,0 +1,22 @@
+#!/usr/bin/exec-suid -- /bin/bash -p
+set -u
+
+PAYLOAD=/home/hacker/payload.bin
+if [ ! -s "$PAYLOAD" ]; then
+    echo "Crie /home/hacker/payload.bin primeiro."
+    exit 1
+fi
+if grep -aFq ENCODED_OK "$PAYLOAD"; then
+    echo "A mensagem nao pode estar em claro no payload."
+    exit 1
+fi
+
+gcc -O2 -Wall /challenge/run_payload.c -o /tmp/run_payload
+output=$(timeout 3 /tmp/run_payload "$PAYLOAD" 2>&1) || true
+if [ "$output" = "ENCODED_OK" ]; then
+    echo "Correto! Flag:"
+    cat /flag
+else
+    echo "O decoder nao produziu a mensagem esperada."
+    exit 1
+fi

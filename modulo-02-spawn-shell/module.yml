@@ -1,0 +1,4 @@
+name: "Shellcode 2 - Spawn shell"
+challenges:
+  - id: spawn-shell
+    name: "Shell local - execve(/bin/sh)"

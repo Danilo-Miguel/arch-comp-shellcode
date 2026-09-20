@@ -1,0 +1,4 @@
+name: "Shellcode 3 - Bad characters"
+challenges:
+  - id: null-free
+    name: "Spawn shell sem bytes nulos"
