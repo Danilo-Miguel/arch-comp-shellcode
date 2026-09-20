@@ -115,6 +115,43 @@ Essa etapa simula a bancada de testes do roteiro. Em um exploit real, a origem d
 
 `payload.bin` nao e um programa completo. Ele nao tem cabecalho ELF, entry point ou bibliotecas. Ele contem somente os bytes que serao executados a partir do endereco escolhido pelo harness.
 
+### Demonstração didática: quais bytes foram gerados
+
+Depois de executar o `solve.py`, o professor pode mostrar o tamanho e o conteúdo bruto do payload:
+
+```bash
+wc -c /home/hacker/payload.bin
+od -An -tx1 -v /home/hacker/payload.bin
+```
+
+No modulo 1, a saída esperada é um arquivo de **12 bytes**:
+
+```text
+b8 3c 00 00 00 bf 2a 00 00 00 0f 05
+```
+
+O comando `wc -c` conta bytes. O comando `od -An -tx1 -v` mostra cada byte em hexadecimal, sem tentar interpretar o arquivo como texto ou ELF. A relação com o Assembly pode ser mostrada assim:
+
+| Bytes | Instrução | Significado |
+|---|---|---|
+| `b8 3c 00 00 00` | `mov eax, 60` | seleciona `exit` |
+| `bf 2a 00 00 00` | `mov edi, 42` | define o status `42` |
+| `0f 05` | `syscall` | entra no kernel |
+
+Os zeros nesse payload não são instruções separadas. Eles são parte da codificação little-endian e do preenchimento das instruções `mov` com registradores de 32 bits. Por isso o módulo 3 usa outra forma de montar os registradores.
+
+### Vulnerabilidade, mecanismo e consequência
+
+Marcador para busca: `Vulnerabilidade, mecanismo e consequencia`.
+
+O professor deve separar três perguntas que costumam ser misturadas:
+
+1. **Qual vulnerabilidade ou mecanismo entregou os bytes?** No harness, nenhuma vulnerabilidade real: o programa abre o arquivo e decide explicitamente executar seu conteúdo. Em um exploit real, a entrega poderia ocorrer por um buffer overflow que sobrescreve o endereço de retorno, por exemplo `read(0, buffer, 100)` em um buffer de 16 bytes.
+2. **O que foi gerado tecnicamente?** Um desvio de fluxo para bytes controlados pelo aluno, seguido da execução de instruções escolhidas por ele.
+3. **Qual foi a consequência?** Depende do shellcode: terminar o processo, substituir o processo por um shell, escrever uma mensagem ou carregar um segundo estágio.
+
+No laboratório, o harness substitui a vulnerabilidade apenas para isolar o estudo do shellcode. Assim, o aluno aprende a produzir e executar os bytes antes de combinar isso com uma exploração de memória real.
+
 ## 4. Fichas dos desafios
 
 ## Modulo 1 - `exit42`
@@ -130,6 +167,14 @@ Escreve `mov eax, 60`, coloca `42` em `edi` e executa `syscall`. O `solve.py` gr
 ### O que o atacante esta tentando demonstrar
 
 Que consegue controlar o fluxo de execucao e escolher o codigo de termino do processo. O objetivo nao e abrir shell; e provar o menor efeito observavel possivel.
+
+### Bytes, entrega e consequência
+
+Marcador para busca: `Bytes, entrega e consequencia`.
+
+- **Bytes:** normalmente 12 bytes; mostrar com `wc -c /home/hacker/payload.bin` e `od -An -tx1 -v /home/hacker/payload.bin`.
+- **Vulnerabilidade explorada:** nenhuma no harness. A entrega e intencional e controlada por `mmap` + leitura do arquivo + ponteiro de funcao. Em um exploit real, um buffer overflow poderia sobrescrever o retorno para apontar ao buffer.
+- **Problema gerado:** desvio de fluxo controlado e encerramento do processo com status `42`. Nao houve corrupção acidental de memória neste desafio.
 
 ### O que o defensor/checker verifica
 
@@ -157,6 +202,12 @@ Monta a string `/bin//sh` na pilha, cria o vetor `argv`, configura `rdi`, `rsi` 
 
 Que consegue substituir a imagem do processo por um shell. O shell herda stdin e stdout do harness, por isso o checker consegue enviar um comando controlado e observar a resposta.
 
+### Bytes, entrega e consequência
+
+- **Bytes:** o tamanho depende da montagem; mostrar com `wc -c` e `od -An -tx1 -v`.
+- **Vulnerabilidade explorada:** nenhuma no harness. O mecanismo didatico e a execução deliberada do arquivo. Em um exploit real, o shellcode poderia ser escrito em um buffer overflow e o retorno apontado para esse buffer.
+- **Problema gerado:** `execve` substitui a imagem do processo por `/bin/sh`; o programa original deixa de executar, mas o processo mantém os privilegios e descritores que possuía.
+
 ### O que o defensor/checker verifica
 
 O checker envia `printf SHELL_OK; exit` e procura `SHELL_OK`. Ele nao aceita apenas a existencia de um arquivo ou um retorno sem evidencia de que `execve` funcionou.
@@ -182,6 +233,12 @@ Repete o objetivo do modulo 2, mas substitui formas de montagem que geram zeros 
 ### O que o atacante esta tentando demonstrar
 
 Que consegue adaptar o mesmo comportamento ao canal de entrada. Em uma vulnerabilidade baseada em strings, `0x00` pode encerrar a copia e impedir que o restante do payload chegue ao destino.
+
+### Bytes, entrega e consequência
+
+- **Bytes:** mostrar com `wc -c` e `od -An -tx1 -v`; confirmar a restrição com `od -An -tx1 -v payload.bin | grep -w 00`.
+- **Vulnerabilidade explorada:** nenhuma no harness; a vulnerabilidade discutida e um canal real baseado em strings, como uso incorreto de `strcpy`, que trunca a entrada no primeiro `0x00`.
+- **Problema gerado:** no canal vulnerável, o shellcode seria copiado de forma incompleta e poderia perder a syscall final. A versão null-free evita esse truncamento e ainda produz o shell.
 
 ### O que o defensor/checker verifica
 
@@ -209,6 +266,12 @@ Coloca a mensagem no proprio payload, usa RIP-relative addressing para encontrar
 
 Que um payload nao precisa abrir shell. Ele pode executar uma acao especifica e terminar, reduzindo tamanho e ruido operacional.
 
+### Bytes, entrega e consequência
+
+- **Bytes:** mostrar com `wc -c` e `od -An -tx1 -v`; a mensagem aparece como dados dentro do próprio payload.
+- **Vulnerabilidade explorada:** nenhuma no harness. O mecanismo real estudado é a possibilidade de desviar a execução para bytes injetados, sem depender de uma função útil já existente no binário.
+- **Problema gerado:** uma ação única e observável via `write`, seguida do encerramento; não há shell interativo nem processo persistente.
+
 ### O que o defensor/checker verifica
 
 A saida precisa ser exatamente `COMANDO_UNICO_OK` com quebra de linha. Saida extra indica que o payload nao respeitou o contrato.
@@ -234,6 +297,12 @@ Monta um estagio que escreve `ENCODED_OK`, aplica XOR aos bytes e cria um decode
 ### O que o atacante esta tentando demonstrar
 
 Que pode alterar a representacao do payload para evitar uma assinatura simples ou uma restricao de bytes. A codificacao nao e criptografia forte nem torna o payload seguro.
+
+### Bytes, entrega e consequência
+
+- **Bytes:** mostrar com `wc -c` e `od -An -tx1 -v`; procurar a string em claro com `grep -aF ENCODED_OK payload.bin`, que deve não encontrar resultado.
+- **Vulnerabilidade explorada:** nenhuma no harness. Em um cenário real, o mecanismo de entrega poderia ser uma corrupção de memória que aceita os bytes codificados, mas sofre com filtros ou assinaturas.
+- **Problema gerado:** o decoder modifica bytes em memória e transfere o controle para o estágio recuperado. A consequência é a execução do payload real depois de sua representação armazenada ter sido transformada.
 
 ### O que o defensor/checker verifica
 
@@ -261,6 +330,12 @@ Gera `payload.bin` com no maximo 64 bytes e `stage2.bin` com o payload que impri
 
 Que consegue superar uma limitacao de tamanho. O primeiro estagio cabe no espaco pequeno; o restante chega depois por um canal ja aberto.
 
+### Bytes, entrega e consequência
+
+- **Bytes:** mostrar separadamente com `wc -c /home/hacker/payload.bin`, `od -An -tx1 -v /home/hacker/payload.bin`, `wc -c /home/hacker/stage2.bin` e `od -An -tx1 -v /home/hacker/stage2.bin`.
+- **Vulnerabilidade explorada:** nenhuma no harness. A situação real simulada é uma vulnerabilidade que permite gravar somente poucos bytes no primeiro momento e mantém um canal para receber mais dados.
+- **Problema gerado:** o stage 1 lê o stage 2 para memória executável e pula para ele. O payload completo não precisa caber no espaço inicial.
+
 ### O que o defensor/checker verifica
 
 Limita os tamanhos, envia o stage 2 pela entrada padrao e confirma que o stage 1 realmente o le e transfere a execucao.
@@ -286,6 +361,12 @@ Executa `/bin/sh` preservando os descritores 0 e 1. O aluno compara esse canal h
 ### O que o atacante esta tentando demonstrar
 
 Que o transporte e separado do payload. O shellcode pode receber comandos por um canal que ja existe; ele nao precisa criar um novo canal.
+
+### Bytes, entrega e consequência
+
+- **Bytes:** mostrar com `wc -c /home/hacker/payload.bin` e `od -An -tx1 -v /home/hacker/payload.bin`.
+- **Vulnerabilidade explorada:** nenhuma no harness. A situação real simulada é um processo comprometido que já possui stdin/stdout conectados a um terminal, pipe ou serviço.
+- **Problema gerado:** o processo passa a executar um shell através dos descritores herdados. Não há `socket`, `connect`, `bind` ou `listen` neste challenge.
 
 ### O que o defensor/checker verifica
 
