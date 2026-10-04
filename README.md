@@ -2,6 +2,9 @@
 
 Dojo privado para praticar os conceitos de `Aula9_Shellcode_Roteiro.md` no pwn.college.
 
+A parte expositiva sobre Metasploit (o que e, comandos de `msfconsole` e `msfvenom`,
+para mostrar em aula fora do pwn.college) esta em [METASPLOIT_INTRO.md](METASPLOIT_INTRO.md).
+
 Para conduzir a aula, consulte [NOTAS_PROFESSOR.md](NOTAS_PROFESSOR.md). Esse arquivo explica o objetivo pedagogico, o metodo tecnico, o papel do atacante e do defensor e o motivo de cada challenge.
 
 Os desafios executam somente bytes fornecidos pelo aluno dentro do container do desafio. O harness de execucao e escrito em C, seguindo o roteiro: ele abre `payload.bin`, reserva memoria executavel com `mmap`, carrega os bytes e um ponteiro de funcao transfere o controle para o shellcode. Os exercicios de comunicacao usam entrada e saida locais e controladas; nao criam listeners, nao fazem conexoes externas e nao alteram usuarios, defesas ou outros processos.
