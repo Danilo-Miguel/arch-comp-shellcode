@@ -414,22 +414,24 @@ Em processos comprometidos que ja possuem stdin/stdout redirecionados por um ser
 
 ### Metodo
 
-Apresentacao do Metasploit Framework e geracao do primeiro payload com `msfvenom`,
-executado no mesmo harness controlado dos modulos de shellcode.
+Apresentacao do Metasploit Framework e do `msfvenom` como gerador de payloads,
+relacionando-o ao `pwntools` e ao shellcode dos modulos 1-7.
 
 ### O que o aluno faz
 
-Instala o framework na hora pelo script oficial (omnibus), confirma com
-`msfvenom --version` e gera `linux/x64/exec CMD='/bin/echo MSF_SETUP_OK' -f raw`. O
-harness carrega e executa os bytes. Ha um `solve.py` de fallback em `pwntools` para
-quando nao houver rede/instalacao.
+No pwn.college, gera o payload com `pwntools` (caminho que pontua): um shellcode que
+faz `write` de `MSF_SETUP_OK` e encerra - o mesmo efeito do `linux/x64/exec` do
+`msfvenom`. O harness carrega e executa os bytes.
 
-> **Pegadinha de ambiente (pwn.college):** o workspace padrao e nao-privilegiado -
-> `sudo`/`apt` retornam `workspace is not privileged`. A instalacao do Metasploit
-> exige reiniciar o desafio no **workspace privilegiado** (Practice), que da root mas
-> **nao pontua** a flag. Por isso o fallback em `pwntools` existe: ele roda no
-> workspace padrao e pontua. Em sala, demonstrar o `msfvenom` no modo privilegiado e
-> pontuar com o fallback no modo normal.
+> **Pegadinha de ambiente (pwn.college):** o container e **offline e sem `msfvenom`**.
+> `msfvenom --version` da `command not found`; o instalador via `curl` falha com
+> `Could not resolve host` (sem rede); e `sudo`/`apt` nao funcionam no workspace
+> padrao. Conclusao: **nao da para instalar o Metasploit dentro do desafio**. Por isso
+> a pontuacao dos modulos 8 e 9 sai sempre pelo `pwntools` (ja instalado). O
+> `msfvenom` e **demonstrado fora do pwn.college** (maquina do professor, VM Kali ou
+> `docker run metasploitframework/metasploit-framework`). Em sala: mostrar o
+> `msfvenom` gerando o payload fora, e pontuar com o `pwntools` dentro do desafio,
+> comparando os bytes (`od -An -tx1 -v`) para ver que sao o mesmo tipo de efeito.
 
 ### O que o atacante esta tentando demonstrar
 
@@ -455,8 +457,10 @@ modulo 3 (`null-free`) e ao modulo 5 (`encoded`).
 
 ### O que o aluno faz
 
-Gera um payload sem nenhum `0x00` (`-b '\x00'`, opcionalmente `-e x64/...`) que
-produz `MSF_ENC_OK`. O fallback em `pwntools` monta a string em runtime, sem zeros.
+No pwn.college (offline, sem msfvenom), gera com `pwntools` um payload sem nenhum
+`0x00` que produz `MSF_ENC_OK`, montando a string na pilha (`movabs`/`push`) e
+carregando registradores com `push`/`pop`. Fora do pwn.college, demonstra o mesmo
+com `msfvenom -b '\x00'` (opcionalmente `-e x64/xor_dynamic` para ver o decoder).
 
 ### O que o atacante esta tentando demonstrar
 

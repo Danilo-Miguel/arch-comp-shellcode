@@ -1,9 +1,10 @@
 from pwn import asm, context
 
-# Fallback pwntools equivalente ao payload do msfvenom, sem nenhum byte 0x00.
-# A mensagem "MSF_ENC_OK" e montada na pilha em runtime (sem dados literais no
-# codigo) e os registradores sao carregados com push/pop para evitar os zeros
-# que um "mov edi, 1" geraria. Caminho real no DESCRIPTION.md (msfvenom -b '\x00').
+# Caminho principal no pwn.college (offline, sem msfvenom): pwntools gera o payload
+# sem nenhum byte 0x00. A mensagem "MSF_ENC_OK" e montada na pilha em runtime (sem
+# dados literais no codigo) e os registradores sao carregados com push/pop para
+# evitar os zeros que um "mov edi, 1" geraria. Demonstracao do msfvenom -b '\x00'
+# (fora do pwn.college) no DESCRIPTION.md.
 context.arch = "amd64"
 
 payload = asm("""

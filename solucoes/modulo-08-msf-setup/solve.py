@@ -1,8 +1,8 @@
 from pwn import asm, context
 
-# Gabarito do modulo 8 (fallback pwntools).
-# Caminho com a ferramenta real:
-#   msfvenom -p linux/x64/exec CMD='/bin/echo MSF_SETUP_OK' -f raw -o /home/hacker/payload.bin
+# Gabarito do modulo 8 (pwntools - caminho que pontua no pwn.college, offline).
+# Demonstracao da ferramenta real, fora do pwn.college (com internet/root):
+#   msfvenom -p linux/x64/exec CMD='/bin/echo MSF_SETUP_OK' -f raw -o payload.bin
 context.arch = "amd64"
 
 payload = asm("""

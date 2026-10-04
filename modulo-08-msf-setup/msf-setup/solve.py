@@ -1,8 +1,8 @@
 from pwn import asm, context
 
-# Fallback em pwntools: gera os mesmos bytes que o payload do msfvenom produziria,
-# caso o container esteja sem rede para instalar o Metasploit. O caminho principal,
-# com msfvenom, esta no DESCRIPTION.md.
+# Caminho principal no pwn.college (offline, sem msfvenom): gera com pwntools os
+# mesmos bytes que o payload linux/x64/exec do msfvenom produziria. A demonstracao
+# do msfvenom (fora do pwn.college) esta no DESCRIPTION.md.
 context.arch = "amd64"
 
 payload = asm("""

@@ -1,8 +1,8 @@
 from pwn import asm, context
 
-# Gabarito do modulo 9 (fallback pwntools, sem 0x00).
-# Caminho com a ferramenta real:
-#   msfvenom -p linux/x64/exec CMD='/bin/echo MSF_ENC_OK' -b '\x00' -f raw -o /home/hacker/payload.bin
+# Gabarito do modulo 9 (pwntools, sem 0x00 - caminho que pontua no pwn.college).
+# Demonstracao da ferramenta real, fora do pwn.college (com internet/root):
+#   msfvenom -p linux/x64/exec CMD='/bin/echo MSF_ENC_OK' -b '\x00' -f raw -o payload.bin
 context.arch = "amd64"
 
 payload = asm("""
