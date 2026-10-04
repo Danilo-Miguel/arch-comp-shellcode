@@ -20,18 +20,20 @@ Repare no paralelo: tudo que voce fez manualmente tem um equivalente no framewor
 
 ## Instalacao (passo a passo, feita na hora)
 
-No container, instale o framework. A forma oficial:
+> **Atencao - privilegios no pwn.college:** o workspace padrao e *nao-privilegiado*,
+> entao `sudo` e `apt` nao funcionam (`sudo: workspace is not privileged`). Para
+> instalar o Metasploit voce precisa reiniciar o desafio no **workspace privilegiado**
+> (opcao de "Practice"/privileged na tela de start do challenge). Nele voce ja e root,
+> sem `sudo`. Observacao: o modo privilegiado serve para pratica e **nao pontua** a
+> flag - a pontuacao sai pelo fallback em `pwntools` (abaixo).
+
+No workspace privilegiado, instale pela forma oficial (nao use `apt`: o pacote
+geralmente nao esta nos repositorios):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb -o /tmp/msfinstall
 chmod 755 /tmp/msfinstall
 /tmp/msfinstall
-```
-
-Alternativa por gerenciador de pacotes (se disponivel):
-
-```bash
-sudo apt-get update && sudo apt-get install -y metasploit-framework
 ```
 
 Confirme:
@@ -41,9 +43,10 @@ msfvenom --version
 msfvenom -l payloads | grep linux/x64
 ```
 
-> Se o container estiver sem acesso a rede para instalar, use o `solve.py` de
-> fallback (secao abaixo): ele usa `pwntools` para gerar **os mesmos bytes**. O
-> `/challenge/check` valida o comportamento do payload, nao a ferramenta.
+> Se o container estiver sem acesso a rede (o instalador falha) ou voce quiser apenas
+> pontuar, use o `solve.py` de fallback (secao abaixo): ele usa `pwntools`, que ja
+> vem instalado, para gerar **os mesmos bytes**. O `/challenge/check` valida o
+> comportamento do payload, nao a ferramenta.
 
 ## O que voce precisa fazer
 

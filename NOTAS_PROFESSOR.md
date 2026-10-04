@@ -419,10 +419,17 @@ executado no mesmo harness controlado dos modulos de shellcode.
 
 ### O que o aluno faz
 
-Instala o framework na hora (script oficial ou pacote), confirma com
+Instala o framework na hora pelo script oficial (omnibus), confirma com
 `msfvenom --version` e gera `linux/x64/exec CMD='/bin/echo MSF_SETUP_OK' -f raw`. O
 harness carrega e executa os bytes. Ha um `solve.py` de fallback em `pwntools` para
 quando nao houver rede/instalacao.
+
+> **Pegadinha de ambiente (pwn.college):** o workspace padrao e nao-privilegiado -
+> `sudo`/`apt` retornam `workspace is not privileged`. A instalacao do Metasploit
+> exige reiniciar o desafio no **workspace privilegiado** (Practice), que da root mas
+> **nao pontua** a flag. Por isso o fallback em `pwntools` existe: ele roda no
+> workspace padrao e pontua. Em sala, demonstrar o `msfvenom` no modo privilegiado e
+> pontuar com o fallback no modo normal.
 
 ### O que o atacante esta tentando demonstrar
 

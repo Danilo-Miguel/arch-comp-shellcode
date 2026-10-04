@@ -20,6 +20,10 @@ Este modulo liga o `msfvenom` ao que voce viu no modulo 3 (`null-free`) e no mod
 
 ## Caminho com msfvenom
 
+> Requer o Metasploit instalado, ou seja, o **workspace privilegiado** (ver modulo 8:
+> no workspace padrao, `sudo`/`apt` nao funcionam). Sem ele, pule para o fallback em
+> `pwntools` - o checker valida o comportamento, nao a ferramenta.
+
 ```bash
 msfvenom -p linux/x64/exec CMD='/bin/echo MSF_ENC_OK' \
          -b '\x00' -f raw -o /home/hacker/payload.bin
