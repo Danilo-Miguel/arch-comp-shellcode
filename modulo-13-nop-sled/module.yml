@@ -1,0 +1,4 @@
+name: "Corrupcao 4 - NOP sled"
+challenges:
+  - id: nop-sled
+    name: "NOP sled para pouso impreciso"

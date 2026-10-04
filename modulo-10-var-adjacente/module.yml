@@ -1,0 +1,4 @@
+name: "Corrupcao 1 - Variavel adjacente"
+challenges:
+  - id: var-adjacente
+    name: "Estouro de buffer sobre variavel vizinha"

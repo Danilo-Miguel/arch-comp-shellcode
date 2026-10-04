@@ -1,0 +1,4 @@
+name: "Buffer Overflow 2 - Controlar o RIP"
+challenges:
+  - id: controle-rip
+    name: "Controlar o RIP e saltar para o buffer"

@@ -1,0 +1,23 @@
+#!/usr/bin/exec-suid -- /bin/bash -p
+set -u
+
+PAYLOAD=/home/hacker/payload.bin
+if [ ! -s "$PAYLOAD" ]; then
+    echo "Crie /home/hacker/payload.bin primeiro (rode python3 /home/hacker/solve.py)."
+    exit 1
+fi
+
+gcc -O0 -fno-stack-protector -no-pie -z execstack -Wall /challenge/vuln.c -o /tmp/vuln
+
+# O shellcode abre /bin/sh usando o stdin herdado. Enviamos um comando por ele.
+output=$(echo 'echo BOF_SHELL_OK' | /tmp/vuln "$PAYLOAD" 2>&1)
+echo "--- saida do programa ---"
+echo "$output"
+echo "-------------------------"
+if echo "$output" | grep -q "BOF_SHELL_OK"; then
+    echo "Correto! Flag:"
+    cat /flag
+else
+    echo "Esperado: o shellcode injetado deveria abrir /bin/sh e executar o comando (BOF_SHELL_OK)."
+    exit 1
+fi

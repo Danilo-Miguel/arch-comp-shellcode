@@ -1,0 +1,21 @@
+#!/usr/bin/exec-suid -- /bin/bash -p
+set -u
+
+PAYLOAD=/home/hacker/payload.bin
+if [ ! -s "$PAYLOAD" ]; then
+    echo "Crie /home/hacker/payload.bin primeiro (rode python3 /home/hacker/solve.py)."
+    exit 1
+fi
+
+gcc -O0 -fno-stack-protector -no-pie -Wall /challenge/vuln.c -o /tmp/vuln
+output=$(/tmp/vuln "$PAYLOAD" 2>&1)
+echo "--- saida do programa ---"
+echo "$output"
+echo "-------------------------"
+if echo "$output" | grep -q "OFFSET_OK"; then
+    echo "Correto! Flag:"
+    cat /flag
+else
+    echo "Esperado: achar o offset correto e saltar para win() (OFFSET_OK)."
+    exit 1
+fi

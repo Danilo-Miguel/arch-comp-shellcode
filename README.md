@@ -17,6 +17,26 @@ Os desafios executam somente bytes fornecidos pelo aluno dentro do container do 
 | 5 | encoded | decodificador em runtime libera a mensagem |
 | 6 | staged | primeiro estagio recebe e executa o segundo via stdin |
 | 7 | canal local | shell usa stdin/stdout como canal ja estabelecido |
+| 8 | msf-setup | instalar Metasploit e gerar o primeiro payload com `msfvenom` |
+| 9 | msf-encoders | encoder/formato/bad chars com `msfvenom` (sem `0x00`) |
+| 10 | var-adjacente | estouro sobrescreve variavel vizinha |
+| 11 | ponteiro-funcao | estouro sobrescreve ponteiro de funcao e desvia a chamada |
+| 12 | endereco-retorno | estouro sobrescreve o endereco de retorno salvo (ret2win) |
+| 13 | nop-sled | NOP sled tolera pouso impreciso |
+| 14 | offset | descobrir o offset ate o retorno com `cyclic` |
+| 15 | controle-rip | controlar o RIP e saltar para o buffer |
+| 16 | shellcode-injetado | injetar shellcode com sled e abrir shell |
+| 17 | msfvenom-no-buffer | entregar shellcode do `msfvenom` pelo overflow |
+
+Os modulos 1 a 9 executam shellcode em um harness controlado que nao tem
+vulnerabilidade. Os modulos 10 a 17 introduzem **corrupcao de memoria** e **buffer
+overflow**: cada um traz um programa C deliberadamente vulneravel (`vuln.c`, incluido
+na pasta do challenge) compilado com `-fno-stack-protector -no-pie` (e `-z execstack`
+nos modulos 15 a 17). Toda a atividade e local no container; nao ha rede, listener
+nem alvo remoto. O bloco 8-9 e Metasploit: o `msfvenom` substitui o `pwntools` como
+gerador de payloads, e os desafios aceitam um fallback em `pwntools` quando a
+ferramenta nao esta instalada, porque o checker valida o comportamento, nao a
+ferramenta.
 
 ## Fluxo do aluno
 
@@ -41,6 +61,19 @@ Cada pasta de challenge ja possui um `solve.py` completo. Na plataforma, copie o
 | `encoded` | `modulo-05-encoded/encoded/solve.py` | `/home/hacker/payload.bin` |
 | `staged` | `modulo-06-staged/staged/solve.py` | `/home/hacker/payload.bin` e `/home/hacker/stage2.bin` |
 | `canal-local` | `modulo-07-canal-local/canal-local/solve.py` | `/home/hacker/payload.bin` |
+| `msf-setup` | `modulo-08-msf-setup/msf-setup/solve.py` | `/home/hacker/payload.bin` |
+| `msf-encoders` | `modulo-09-msf-encoders/msf-encoders/solve.py` | `/home/hacker/payload.bin` |
+| `var-adjacente` | `modulo-10-var-adjacente/var-adjacente/solve.py` | `/home/hacker/payload.bin` |
+| `ponteiro-funcao` | `modulo-11-ponteiro-funcao/ponteiro-funcao/solve.py` | `/home/hacker/payload.bin` |
+| `endereco-retorno` | `modulo-12-endereco-retorno/endereco-retorno/solve.py` | `/home/hacker/payload.bin` |
+| `nop-sled` | `modulo-13-nop-sled/nop-sled/solve.py` | `/home/hacker/payload.bin` |
+| `offset` | `modulo-14-offset/offset/solve.py` | `/home/hacker/payload.bin` |
+| `controle-rip` | `modulo-15-controle-rip/controle-rip/solve.py` | `/home/hacker/payload.bin` |
+| `shellcode-injetado` | `modulo-16-shellcode-injetado/shellcode-injetado/solve.py` | `/home/hacker/payload.bin` |
+| `msfvenom-no-buffer` | `modulo-17-msfvenom-no-buffer/msfvenom-no-buffer/solve.py` | `/home/hacker/payload.bin` |
+
+Nos modulos 10 a 17, o `solve.py` tambem compila o `vuln.c` correspondente (em
+`/tmp`) para ler enderecos/offsets de forma deterministica antes de montar o payload.
 
 Exemplo completo para o primeiro challenge:
 

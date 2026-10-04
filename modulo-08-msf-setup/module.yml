@@ -1,0 +1,4 @@
+name: "Metasploit 1 - Framework e primeiro payload"
+challenges:
+  - id: msf-setup
+    name: "Metasploit - instalacao e primeiro payload com msfvenom"

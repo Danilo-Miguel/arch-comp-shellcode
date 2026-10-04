@@ -1,0 +1,4 @@
+name: "Corrupcao 2 - Ponteiro de funcao"
+challenges:
+  - id: ponteiro-funcao
+    name: "Sobrescrever ponteiro de funcao e desviar a chamada"

@@ -1,0 +1,23 @@
+#!/usr/bin/exec-suid -- /bin/bash -p
+set -u
+
+PAYLOAD=/home/hacker/payload.bin
+if [ ! -s "$PAYLOAD" ]; then
+    echo "Crie /home/hacker/payload.bin primeiro (rode python3 /home/hacker/solve.py)."
+    exit 1
+fi
+
+gcc -O2 -Wall /challenge/run_sled.c -o /tmp/run_sled
+
+# Executa varias vezes: o jitter e aleatorio, entao o sled precisa ser confiavel.
+for i in 1 2 3 4 5; do
+    output=$(/tmp/run_sled "$PAYLOAD" 2>&1)
+    echo "tentativa $i: $output"
+    if ! echo "$output" | grep -q "NOP_SLED_OK"; then
+        echo "Falhou na tentativa $i: o sled nao cobriu o pouso. Aumente a rampa de NOPs."
+        exit 1
+    fi
+done
+
+echo "Correto! Flag:"
+cat /flag

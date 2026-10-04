@@ -1,0 +1,4 @@
+name: "Buffer Overflow 1 - Descobrir o offset"
+challenges:
+  - id: offset
+    name: "Descobrir o offset ate o endereco de retorno com cyclic"
