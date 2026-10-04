@@ -1,7 +1,7 @@
 # Buffer overflow: controlar o RIP e saltar para o buffer
 
 Agora voce junta as duas metades do dojo: a **corrupcao** (sobrescrever o endereco
-de retorno) e o **shellcode** (os bytes que voce escreveu nos modulos 1 a 9). Em
+de retorno) e o **shellcode** (os bytes que voce escreveu nos modulos 1 a 7). Em
 vez de pular para uma funcao que ja existe, voce vai apontar o retorno para o
 **proprio buffer**, onde o seu shellcode esta.
 

@@ -48,7 +48,7 @@ payload += p64(win)       # sobrescreve o endereco de retorno
 open("/home/hacker/payload.bin", "wb").write(payload)
 ```
 
-O offset ate o endereco de retorno e **72** neste programa. No modulo 14 voce vai
+O offset ate o endereco de retorno e **72** neste programa. No modulo 12 voce vai
 aprender a **descobrir** esse offset sozinho com `cyclic`, para quando ele nao for
 dado.
 
@@ -66,4 +66,4 @@ classicas atacam exatamente este ponto: **stack canaries** (um valor sentinela
 antes do endereco de retorno, verificado no `ret`), **ASLR** (enderecos
 imprevisiveis) e **NX** (pilha nao executavel). Aqui todas estao desligadas para
 o estudo. Repare que ainda nao injetamos codigo: so pulamos para uma funcao que ja
-existia. Injetar shellcode vem nos modulos 15 e 16.
+existia. Injetar shellcode vem nos modulos 13 e 14.

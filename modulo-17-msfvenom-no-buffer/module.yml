@@ -1,4 +1,0 @@
-name: "Buffer Overflow 4 - Payload do msfvenom no buffer"
-challenges:
-  - id: msfvenom-no-buffer
-    name: "Entregar shellcode do msfvenom por buffer overflow"

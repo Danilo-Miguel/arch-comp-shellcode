@@ -1,8 +1,8 @@
 # Buffer overflow: injetar shellcode e abrir shell
 
-No modulo 15 voce pulou para o buffer e executou um shellcode que so imprimia uma
+No modulo 13 voce pulou para o buffer e executou um shellcode que so imprimia uma
 mensagem. Agora voce injeta o shellcode de verdade - o `execve("/bin/sh")` do
-modulo 2 - e usa um **NOP sled** (modulo 13) para nao depender de acertar o byte
+modulo 2 - e usa um **NOP sled** (modulo 11) para nao depender de acertar o byte
 exato do inicio.
 
 ## O plano

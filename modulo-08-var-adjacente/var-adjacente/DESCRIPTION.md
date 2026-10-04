@@ -1,6 +1,6 @@
 # Corrupcao de memoria: variavel adjacente
 
-Aqui comeca o bloco de **corrupcao de memoria**. Nos modulos 1 a 9 o harness
+Aqui comeca o bloco de **corrupcao de memoria**. Nos modulos 1 a 7 o harness
 executava seus bytes de proposito. Agora o programa tem uma **vulnerabilidade
 real**: ele confia no tamanho da sua entrada.
 

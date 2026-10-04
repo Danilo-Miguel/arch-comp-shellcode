@@ -34,33 +34,34 @@ O aluno nao escreve o harness C. O harness ja esta no challenge e serve como ban
 
 Esses temas aparecem no roteiro como contexto. No dojo, foram substituidos por harnesses controlados para que a aula ensine shellcode sem fornecer um canal de ataque contra uma maquina real.
 
-### Extensao: Metasploit, corrupcao de memoria e buffer overflow (modulos 8-17)
+### Extensao: corrupcao de memoria e buffer overflow (modulos 8-14)
 
 A partir do modulo 8 o dojo foi estendido para cobrir o que antes era apenas
 contexto. A exploracao de buffer overflow, a descoberta de offset e a injecao de
 shellcode na pilha **passam a ser praticadas**, sempre de forma local e controlada:
 
-- **Modulos 8-9 (Metasploit):** apresentam o framework e o `msfvenom` como gerador
-  de payloads (o analogo do `pwntools`). A instalacao e feita na hora, passo a passo.
-  Cada desafio aceita um fallback em `pwntools`, porque o checker valida o
-  comportamento do payload, nao a ferramenta usada para gera-lo.
-- **Modulos 10-13 (corrupcao de memoria - primitivas):** isolam cada mecanismo de
+- **Modulos 8-11 (corrupcao de memoria - primitivas):** isolam cada mecanismo de
   corrupcao em um programa C vulneravel: variavel adjacente, ponteiro de funcao,
   endereco de retorno e NOP sled. Aqui o aluno aprende *o que* se corrompe, um
   mecanismo de cada vez, sem ainda montar a cadeia completa.
-- **Modulos 14-17 (buffer overflow - cadeia completa):** juntam as primitivas na
-  exploracao completa: descobrir o offset com `cyclic`, controlar o RIP, injetar
-  shellcode com sled e, por fim, entregar um payload do `msfvenom` pelo overflow.
+- **Modulos 12-14 (buffer overflow - cadeia completa):** juntam as primitivas na
+  exploracao completa: descobrir o offset com `cyclic`, controlar o RIP e injetar
+  shellcode com sled para abrir shell.
+
+O **Metasploit** fica como **conteudo conceitual** (ver `METASPLOIT_INTRO.md`) e nao
+tem modulos de pratica neste dojo: o container do pwn.college e offline e sem
+`msfvenom`, entao a pratica da ferramenta e feita em outro momento, fora daqui. A
+pratica pontuada deste dojo e toda em `pwntools`/C.
 
 Decisoes didaticas importantes de seguranca nesses modulos:
 
-- Os `vuln.c` sao compilados com `-fno-stack-protector -no-pie` e, nos modulos 15-17,
+- Os `vuln.c` sao compilados com `-fno-stack-protector -no-pie` e, nos modulos 13-14,
   `-z execstack`. As defesas sao desligadas **de proposito**, para que o mecanismo
   fique visivel; o professor deve enfatizar que cada flag desligada corresponde a uma
   defesa real (canary, PIE/ASLR, NX).
 - Os programas vulneraveis **dropam privilegios** (para uid 1000) antes de executar o
-  fluxo controlado pelo aluno. Assim, mesmo o shell do modulo 16 roda sem privilegio.
-- Nos modulos 15-17, o alvo desliga ASLR e fixa o ambiente re-executando a si mesmo
+  fluxo controlado pelo aluno. Assim, mesmo o shell do modulo 14 roda sem privilegio.
+- Nos modulos 13-14, o alvo desliga ASLR e fixa o ambiente re-executando a si mesmo
   (`personality(ADDR_NO_RANDOMIZE)` + ambiente minimo). Isso torna o endereco do
   buffer deterministico: e um artificio de laboratorio para o exercicio ser
   reprodutivel, nao uma condicao de um alvo real.
@@ -410,69 +411,7 @@ Evita que o aluno confunda objetivo do shellcode com mecanismo de comunicacao. R
 
 Em processos comprometidos que ja possuem stdin/stdout redirecionados por um servico, pipe ou terminal. Para defesa, processos inesperadamente transformados em shells e uso anormal de descritores herdados merecem investigacao.
 
-## Modulo 8 - `msf-setup`
-
-### Metodo
-
-Apresentacao do Metasploit Framework e do `msfvenom` como gerador de payloads,
-relacionando-o ao `pwntools` e ao shellcode dos modulos 1-7.
-
-### O que o aluno faz
-
-No pwn.college, gera o payload com `pwntools` (caminho que pontua): um shellcode que
-faz `write` de `MSF_SETUP_OK` e encerra - o mesmo efeito do `linux/x64/exec` do
-`msfvenom`. O harness carrega e executa os bytes.
-
-> **Pegadinha de ambiente (pwn.college):** o container e **offline e sem `msfvenom`**.
-> `msfvenom --version` da `command not found`; o instalador via `curl` falha com
-> `Could not resolve host` (sem rede); e `sudo`/`apt` nao funcionam no workspace
-> padrao. Conclusao: **nao da para instalar o Metasploit dentro do desafio**. Por isso
-> a pontuacao dos modulos 8 e 9 sai sempre pelo `pwntools` (ja instalado). O
-> `msfvenom` e **demonstrado fora do pwn.college** (maquina do professor, VM Kali ou
-> `docker run metasploitframework/metasploit-framework`). Em sala: mostrar o
-> `msfvenom` gerando o payload fora, e pontuar com o `pwntools` dentro do desafio,
-> comparando os bytes (`od -An -tx1 -v`) para ver que sao o mesmo tipo de efeito.
-
-### O que o atacante esta tentando demonstrar
-
-Que uma ferramenta pode automatizar o que ele fez a mao nos modulos 1 a 7. O mapa
-mental e: payload = shellcode; `msfvenom` = `pwntools`; encoder = modulo 5; stager =
-modulo 6; `msfconsole` = orquestrador (so conceito aqui).
-
-### O que o defensor/checker verifica
-
-Que a saida contem `MSF_SETUP_OK`. Nao importa se veio do `msfvenom` ou do fallback.
-
-### Por que comeca o bloco
-
-Serve de ponte: o aluno ja sabe o que e shellcode; agora ve a ferramenta padrao da
-industria gerando o mesmo tipo de bytes.
-
-## Modulo 9 - `msf-encoders`
-
-### Metodo
-
-Uso de encoder, formato de saida e restricao de bad chars no `msfvenom`, ligando ao
-modulo 3 (`null-free`) e ao modulo 5 (`encoded`).
-
-### O que o aluno faz
-
-No pwn.college (offline, sem msfvenom), gera com `pwntools` um payload sem nenhum
-`0x00` que produz `MSF_ENC_OK`, montando a string na pilha (`movabs`/`push`) e
-carregando registradores com `push`/`pop`. Fora do pwn.college, demonstra o mesmo
-com `msfvenom -b '\x00'` (opcionalmente `-e x64/xor_dynamic` para ver o decoder).
-
-### O que o atacante esta tentando demonstrar
-
-Que pode adaptar a representacao dos bytes a restricoes do canal (bad chars) sem
-mudar o efeito. Deve-se reforcar: encoder serve para restricao de bytes, nao para
-"ficar indetectavel".
-
-### O que o defensor/checker verifica
-
-Rejeita qualquer `0x00` no arquivo e depois procura `MSF_ENC_OK`.
-
-## Modulo 10 - `var-adjacente`
+## Modulo 8 - `var-adjacente`
 
 ### Metodo
 
@@ -495,7 +434,7 @@ Compila com `-fno-stack-protector -no-pie`, roda e procura `VAR_ADJ_OK` (so impr
 quando `admin == 0x1337`). Defesa real: usar `sizeof` do destino, funcoes com limite,
 canaries.
 
-## Modulo 11 - `ponteiro-funcao`
+## Modulo 9 - `ponteiro-funcao`
 
 ### Metodo
 
@@ -517,7 +456,7 @@ o proprio programa executa (analogia com vtables, callbacks e GOT).
 
 Procura `FUNC_PTR_OK` (impresso por `win()`). Defesa real: CFI, RELRO, layout.
 
-## Modulo 12 - `endereco-retorno`
+## Modulo 10 - `endereco-retorno`
 
 ### Metodo
 
@@ -538,9 +477,9 @@ apos a funcao terminar. Aqui ainda saltamos para codigo existente, nao injetado.
 ### O que o defensor/checker verifica
 
 Procura `RET2WIN_OK`. Defesa real: stack canary, ASLR, NX. O modulo nomeia o offset;
-descobri-lo e assunto do modulo 14.
+descobri-lo e assunto do modulo 12.
 
-## Modulo 13 - `nop-sled`
+## Modulo 11 - `nop-sled`
 
 ### Metodo
 
@@ -561,7 +500,7 @@ Que precisao pode ser trocada por margem. Prepara os modulos de buffer overflow.
 `NOP_SLED_OK` em todas as 5 execucoes. Para a defesa, longas sequencias de `0x90` sao
 um indicador classico de IDS/EDR.
 
-## Modulo 14 - `offset`
+## Modulo 12 - `offset`
 
 ### Metodo
 
@@ -581,7 +520,7 @@ Que o offset nao precisa ser dado: ha uma tecnica sistematica para encontra-lo.
 
 Procura `OFFSET_OK`. Offset errado nao salta para `win()`.
 
-## Modulo 15 - `controle-rip`
+## Modulo 13 - `controle-rip`
 
 ### Metodo
 
@@ -603,7 +542,7 @@ A juncao das duas metades do dojo: corrupcao (endereco de retorno) + shellcode
 
 Compila com `-z execstack` e procura `RIP_OK`.
 
-## Modulo 16 - `shellcode-injetado`
+## Modulo 14 - `shellcode-injetado`
 
 ### Metodo
 
@@ -625,28 +564,6 @@ shellcode arbitrario com os privilegios e descritores do processo.
 
 Procura `BOF_SHELL_OK` na saida do shell. Defesa que mata este caminho: NX.
 
-## Modulo 17 - `msfvenom-no-buffer`
-
-### Metodo
-
-Buffer overflow completo, etapa 4: entregar um shellcode gerado pelo `msfvenom` pelo
-overflow. Fecha o ciclo Metasploit + buffer overflow.
-
-### O que o aluno faz
-
-Gera o shellcode com `msfvenom -p linux/x64/exec CMD='/bin/echo MSF_BUF_OK'` (ou
-fallback em `pwntools`), embrulha em `[sled][shellcode][NOPs][ret = buf]` e entrega
-pelo buffer.
-
-### O que o atacante esta tentando demonstrar
-
-Que as pecas estudadas separadamente se combinam: ferramenta gera, vulnerabilidade
-entrega, pilha executavel roda.
-
-### O que o defensor/checker verifica
-
-Procura `MSF_BUF_OK`. Aceita `msfvenom` ou o fallback.
-
 ## 5. Ordem sugerida para a aula
 
 1. Mostrar o modulo 1 e explicar bytes crus, syscall e evidencia de sucesso.
@@ -658,18 +575,16 @@ Procura `MSF_BUF_OK`. Aceita `msfvenom` ou o fallback.
 7. Usar o modulo 5 para explicar decoder, dados em memoria e assinaturas.
 8. Usar o modulo 6 para explicar limite de tamanho e staged payload.
 9. Fechar o bloco de shellcode com o modulo 7 e separar transporte local de reverse/bind shell.
-10. Introduzir o Metasploit (modulo 8): instalar na hora e mostrar que `msfvenom` gera o mesmo tipo de bytes do `pwntools`.
-11. Usar o modulo 9 para ligar encoders/bad chars (`-b`, `-e`) ao que ja foi visto nos modulos 3 e 5.
-12. Abrir o bloco de corrupcao (modulo 10) mostrando o `vuln.c`: desenhar `name` e `admin` lado a lado na pilha.
-13. Modulo 11: transformar a variavel vizinha em um ponteiro de funcao e mostrar `nm`/`objdump` achando `win`.
-14. Modulo 12: desenhar o frame (buffer, rbp salvo, endereco de retorno) e fazer o primeiro ret2win.
-15. Modulo 13: introduzir o NOP sled e a ideia de tolerancia a imprecisao.
-16. Modulo 14: ensinar `cyclic`/`cyclic_find` e a descoberta de offset sob o `gdb`.
-17. Modulo 15: controlar o RIP e saltar para o buffer; discutir por que NX/ASLR/canary estao desligados.
-18. Modulo 16: injetar o `execve("/bin/sh")` com sled e abrir shell pelo stdin herdado.
-19. Fechar com o modulo 17: entregar um payload do `msfvenom` pelo overflow e amarrar os dois blocos.
+10. (Opcional, expositivo) Introduzir o Metasploit pelo `METASPLOIT_INTRO.md`: o que e, `msfconsole`/`msfvenom` e o paralelo com o `pwntools`. A pratica da ferramenta fica para outro momento, fora do pwn.college.
+11. Abrir o bloco de corrupcao (modulo 8) mostrando o `vuln.c`: desenhar `name` e `admin` lado a lado na pilha.
+12. Modulo 9: transformar a variavel vizinha em um ponteiro de funcao e mostrar `nm`/`objdump` achando `win`.
+13. Modulo 10: desenhar o frame (buffer, rbp salvo, endereco de retorno) e fazer o primeiro ret2win.
+14. Modulo 11: introduzir o NOP sled e a ideia de tolerancia a imprecisao.
+15. Modulo 12: ensinar `cyclic`/`cyclic_find` e a descoberta de offset sob o `gdb`.
+16. Modulo 13: controlar o RIP e saltar para o buffer; discutir por que NX/ASLR/canary estao desligados.
+17. Fechar com o modulo 14: injetar o `execve("/bin/sh")` com sled e abrir shell pelo stdin herdado.
 
-Em cada modulo de 10 a 17, mostrar o `vuln.c` **antes** da solucao e pedir que o
+Em cada modulo de 8 a 14, mostrar o `vuln.c` **antes** da solucao e pedir que o
 aluno aponte a linha vulneravel e a defesa que a evitaria.
 
 ## 6. Perguntas de verificacao para o professor
@@ -685,16 +600,15 @@ aluno aponte a linha vulneravel e a defesa que a evitaria.
 - Por que o stage 1 existe no modulo 6?
 - Qual e a diferenca entre canal de comunicacao e objetivo do payload?
 - Que defesa impediria o harness de executar dados como codigo?
-- Qual e o equivalente no Metasploit do `pwntools`, do decoder (modulo 5) e do stager (modulo 6)?
-- Por que o checker aceita tanto `msfvenom` quanto o fallback em `pwntools`?
+- Qual e o papel, no Metasploit, do `msfvenom` (vs `pwntools`), do encoder (vs o decoder do modulo 5) e do stager (vs o modulo 6)?
 - Qual a diferenca entre sobrescrever uma variavel adjacente, um ponteiro de funcao e o endereco de retorno?
 - Como o `cyclic` transforma a descoberta do offset em algo sistematico?
 - Por que o NOP sled aumenta a confiabilidade do exploit?
 - Quais flags de compilacao desligam quais defesas nos `vuln.c`, e o que cada defesa faria se estivesse ligada?
-- Por que o alvo dos modulos 15-17 desliga ASLR e fixa o ambiente, e por que isso e um artificio de laboratorio?
+- Por que o alvo dos modulos 13-14 desliga ASLR e fixa o ambiente, e por que isso e um artificio de laboratorio?
 
 ## 7. Limites e responsabilidade
 
 Todos os testes devem ocorrer no container do pwn.college, em laboratorio autorizado. Os exemplos de rede, persistencia, criacao de usuario e desativacao de defesa do roteiro sao conceitos para discussao defensiva e nao fazem parte destes desafios.
 
-Os modulos 10 a 17 introduzem corrupcao de memoria e buffer overflow com as defesas (canary, PIE/ASLR, NX) desligadas de proposito, para tornar o mecanismo visivel. Isso **nao** representa um sistema real: um alvo de producao tem essas protecoes ligadas, e os `vuln.c` existem apenas como bancada didatica dentro do container. O Metasploit e instalado e usado somente neste ambiente autorizado. O aluno deve entender que gerar, injetar ou executar shellcode, ou explorar qualquer vulnerabilidade, fora de um ambiente autorizado pode causar impacto real e nao deve ser feito.
+Os modulos 8 a 14 introduzem corrupcao de memoria e buffer overflow com as defesas (canary, PIE/ASLR, NX) desligadas de proposito, para tornar o mecanismo visivel. Isso **nao** representa um sistema real: um alvo de producao tem essas protecoes ligadas, e os `vuln.c` existem apenas como bancada didatica dentro do container. O Metasploit aparece apenas como conteudo conceitual (`METASPLOIT_INTRO.md`); sua pratica, quando ocorrer, deve ser em ambiente autorizado e isolado. O aluno deve entender que gerar, injetar ou executar shellcode, ou explorar qualquer vulnerabilidade, fora de um ambiente autorizado pode causar impacto real e nao deve ser feito.

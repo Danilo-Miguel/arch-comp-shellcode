@@ -1,4 +1,0 @@
-name: "Metasploit 2 - Encoders, formatos e bad chars"
-challenges:
-  - id: msf-encoders
-    name: "msfvenom - encoder, formato e bytes proibidos"

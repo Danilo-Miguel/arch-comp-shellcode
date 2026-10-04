@@ -12,13 +12,10 @@ modules:
   - id: modulo-05-encoded
   - id: modulo-06-staged
   - id: modulo-07-canal-local
-  - id: modulo-08-msf-setup
-  - id: modulo-09-msf-encoders
-  - id: modulo-10-var-adjacente
-  - id: modulo-11-ponteiro-funcao
-  - id: modulo-12-endereco-retorno
-  - id: modulo-13-nop-sled
-  - id: modulo-14-offset
-  - id: modulo-15-controle-rip
-  - id: modulo-16-shellcode-injetado
-  - id: modulo-17-msfvenom-no-buffer
+  - id: modulo-08-var-adjacente
+  - id: modulo-09-ponteiro-funcao
+  - id: modulo-10-endereco-retorno
+  - id: modulo-11-nop-sled
+  - id: modulo-12-offset
+  - id: modulo-13-controle-rip
+  - id: modulo-14-shellcode-injetado
